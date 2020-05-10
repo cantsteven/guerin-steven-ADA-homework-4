@@ -88,6 +88,8 @@ cv_data <- pivot_longer(merged,
   rename(area = land_area_skm, density = pop_density) %>%
   mutate(rate = cases / population * 10^6)
 
+
+##Function 
 cv_summary <- function(d, country_list = "World",
                        plot = TRUE, facet = "country",
                        status = c("confirmed", "deaths", "recovered")) {
@@ -241,7 +243,20 @@ cv_summary(d = cv_data, country_list=c("US","United Kingdom","Canada","France","
 ## Challenge 3
 
 ```{r}
+#All countries 
+d<-cv_summary(d=cv_data, country_list="All", plot="FALSE") 
+d<-as.data.frame(d)
+d 
 
+#Only including countries with population over 1 million 
+d<-d[d[,4]>1000000,]
+d
+
+#Finding number of unique countries, counting these
+d_unique<-unique(d$totals.country) %>%
+  length()
+d_unique
+  
 ```
 
 ## Challenge 4
