@@ -245,15 +245,15 @@ cv_summary(d = cv_data, country_list=c("US","United Kingdom","Canada","France","
 ```{r}
 #All countries 
 d<-cv_summary(d=cv_data, country_list="All", plot="FALSE") 
-d<-as.data.frame(d)
 d 
 
 #Only including countries with population over 1 million 
-d<-d[d[,4]>1000000,]
+d<-d[[1]] %>%
+  filter(population>1000000)
 d
 
 #Finding number of unique countries, counting these
-d_unique<-unique(d$totals.country) %>%
+d_unique<-unique(d) %>%
   length()
 d_unique
   
@@ -262,12 +262,102 @@ d_unique
 ## Challenge 4
 
 ```{r}
+#overall tibble
+overall<-filter(d,variable == "confirmed")
+
+#daily tibble
+daily<-filter(d,variable == "daily_confirmed")
+
+#countries with highest overall rate of cases
+overall%>%
+  arrange(desc(cases))%>%
+  head(n=10)
+
+#countries with highest daily rate of cases 
+daily%>%
+  arrange(desc(cases))%>%
+  head(n=10)
 
 ```
 
 ## Challenge 5
 
 ```{r}
+#rate vs density------------------------------------------------
+lm(rate ~ density,data=overall) %>%
+summary()
+
+g<-ggplot(data=overall,aes(x=density, y=rate))+ 
+  geom_point() + 
+  geom_smooth(method="lm")
+g
+
+#log transformation
+g<-ggplot(data=overall,aes(x=log(density), y=log(rate)))+ 
+  geom_point() + 
+  geom_smooth(method="lm")
+g
+
+#adjusted model
+lm(log(rate) ~ log(density),data=overall) %>%
+summary()
+
+#rate vs population------------------------------------------------
+lm(rate ~ population,data=overall)%>%
+  summary()
+
+g<-ggplot(data=overall,aes(x=population, y=rate))+ 
+  geom_point() + 
+  geom_smooth(method="lm")
+g
+
+#log transformation
+g<-ggplot(data=overall,aes(x=log(population), y=log(rate)))+ 
+  geom_point() + 
+  geom_smooth(method="lm")
+g
+
+lm(log(rate) ~ log(population),data=overall)%>%
+  summary()
+
+#rate vs gdp_capita------------------------------------------------
+lm(rate ~ gdp_capita,data=overall)%>%
+  summary()
+
+g<-ggplot(data=overall,aes(x=gdp_capita, y=rate))+ 
+  geom_point() + 
+  geom_smooth(method="lm")
+g
+
+#log transformation
+g<-ggplot(data=overall,aes(x=log(gdp_capita), y=log(rate)))+ 
+  geom_point() + 
+  geom_smooth(method="lm")
+g
+
+lm(log(rate) ~ log(gdp_capita),data=overall)%>%
+  summary()
+
+#rate vs income------------------------------------------------
+lm(rate ~ income,data=overall)%>%
+  summary()
+
+#Changing order of "income levels"
+overall$income <- factor(overall$income,
+    levels = c('Low income','Lower middle income','Upper middle income','High income'),ordered = TRUE)
+
+#original plot 
+g<-ggplot(data=overall,aes(x=income, y=rate))+ 
+  geom_boxplot()
+g
+
+#log transformation
+g<-ggplot(data=overall,aes(x=income, y=log(rate)))+ 
+  geom_boxplot()
+g
+
+lm(log(rate) ~ income,data=overall)%>%
+  summary()
 
 ```
 
