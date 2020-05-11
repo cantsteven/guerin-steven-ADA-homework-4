@@ -12,6 +12,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ## Setup
 
 ```{r, include=FALSE}
+library(MASS)
 library(tidyverse)
 library(patchwork) # for plotting
 library(scales) # for log y axis scale
@@ -20,6 +21,7 @@ library(BBmisc) # for %nin%
 library(devtools)
 remotes::install_github("joachim-gassen/tidycovid19")
 library(tidycovid19)
+library(MuMIn)
 
 merged <- download_merged_data(cached = TRUE)
 merged <- merged %>%
@@ -285,6 +287,7 @@ daily%>%
 ```{r}
 #Removing Puerto Rico, which was causing errors
 overall <- overall[-c(112),]
+daily <- daily[-c(112),]
 
 #rate vs density------------------------------------------------
 lm(rate ~ density, data=overall) %>%
@@ -363,16 +366,44 @@ lm(log(rate) ~ income,data=overall)%>%
   summary()
 
 ```
+### Which variables have slopes significantly different from zero? 
+### -income and gdp_capita
+
 
 ## Challenge 6
 
 ```{r}
+#Creating AIC model for overall infection rate 
+m <- lm(data = overall, rate ~ log(density) + log(population) + log(gdp_capita) + income)
+s <- stepAIC(m, scope = . ~ ., direction = "both")
+# Which model is best? log(density) + log(gdp_capita) + income
+
+
+# What are the pseudo-R^2 values?
+#full model
+r.squaredGLMM(m)
+#best model
+r.squaredGLMM(s)
+
+#Creating AIC model for daily infection rate 
+m <- lm(data = daily, rate ~ log(density) + log(population) + log(gdp_capita) + income)
+s <- stepAIC(m, scope = . ~ ., direction = "both")
+# Are the predictors the same? No, log(density) + log(gdp_capita). Income is omitted this time. 
+
+# What are the pseudo-R^2 values?
+#full model
+r.squaredGLMM(m)
+#best model
+r.squaredGLMM(s)
 
 ```
+
 
 ## Challenge 7
 
 ```{r}
+
+
 
 ```
 

@@ -465,10 +465,10 @@ d</code></pre>
 ## # … with 914 more rows, and 4 more variables: life_expectancy &lt;dbl&gt;,
 ## #   max_sd &lt;dbl&gt;, max_mr &lt;dbl&gt;, on &lt;date&gt;</code></pre>
 <pre class="r"><code>#Finding number of unique countries, counting these
-d_unique&lt;-unique(d) %&gt;%
+d_unique&lt;-unique(d$country) %&gt;%
   length()
 d_unique</code></pre>
-<pre><code>## [1] 13</code></pre>
+<pre><code>## [1] 154</code></pre>
 </div>
 <div id="challenge-4" class="section level2">
 <h2>Challenge 4</h2>
@@ -759,9 +759,48 @@ g</code></pre>
 ## Residual standard error: 1.472 on 149 degrees of freedom
 ## Multiple R-squared:  0.5691, Adjusted R-squared:  0.5604 
 ## F-statistic:  65.6 on 3 and 149 DF,  p-value: &lt; 2.2e-16</code></pre>
+<div id="which-variables-have-slopes-significantly-different-from-zero" class="section level3">
+<h3>Which variables have slopes significantly different from zero?</h3>
+</div>
+<div id="income-and-gdp_capita" class="section level3">
+<h3>-income and gdp_capita</h3>
+</div>
 </div>
 <div id="challenge-6" class="section level2">
 <h2>Challenge 6</h2>
+<pre class="r"><code>#Creating AIC model 
+m &lt;- lm(data = overall, rate ~ log(density) + log(population) + log(gdp_capita) + income)
+s &lt;- stepAIC(m, scope = . ~ ., direction = &quot;both&quot;)</code></pre>
+<pre><code>## Start:  AIC=2030.13
+## rate ~ log(density) + log(population) + log(gdp_capita) + income
+## 
+##                   Df Sum of Sq       RSS    AIC
+## - log(population)  1      1414 112117108 2028.1
+## &lt;none&gt;                         112115694 2030.1
+## - log(density)     1   5749336 117865030 2035.6
+## - income           3  13470184 125585878 2041.0
+## - log(gdp_capita)  1  18041066 130156760 2050.4
+## 
+## Step:  AIC=2028.14
+## rate ~ log(density) + log(gdp_capita) + income
+## 
+##                   Df Sum of Sq       RSS    AIC
+## &lt;none&gt;                         112117108 2028.1
+## + log(population)  1      1414 112115694 2030.1
+## - log(density)     1   5883758 118000865 2033.8
+## - income           3  13473253 125590360 2039.0
+## - log(gdp_capita)  1  18387263 130504371 2048.8</code></pre>
+<pre class="r"><code># Which model is best? rate ~ log(density) + log(gdp_capita) + income
+
+
+# What are the pseudo-R^2 values?
+r.squaredGLMM(m)</code></pre>
+<pre><code>## Warning: 'r.squaredGLMM' now calculates a revised statistic. See the help page.</code></pre>
+<pre><code>##            R2m       R2c
+## [1,] 0.4807364 0.4807364</code></pre>
+<pre class="r"><code>r.squaredGLMM(s)</code></pre>
+<pre><code>##           R2m      R2c
+## [1,] 0.482482 0.482482</code></pre>
 </div>
 <div id="challenge-7" class="section level2">
 <h2>Challenge 7</h2>
