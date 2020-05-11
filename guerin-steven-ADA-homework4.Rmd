@@ -22,6 +22,8 @@ library(devtools)
 remotes::install_github("joachim-gassen/tidycovid19")
 library(tidycovid19)
 library(MuMIn)
+library(lme4)
+library(AICcmodavg)
 
 merged <- download_merged_data(cached = TRUE)
 merged <- merged %>%
@@ -44,8 +46,10 @@ add_world1 <- merged %>%
   group_by(date) %>%
   arrange(date) %>%
   summarize(
-    country = "World", iso3c = NA, confirmed = sum(confirmed),
-    deaths = sum(deaths), recovered = sum(recovered),
+    country = "World", iso3c = NA,
+    confirmed = sum(confirmed, na.rm = TRUE),
+    deaths = sum(deaths, na.rm = TRUE),
+    recovered = sum(recovered, na.rm = TRUE),
     timestamp = fmode(timestamp)
   ) %>%
   mutate(
@@ -90,8 +94,7 @@ cv_data <- pivot_longer(merged,
   rename(area = land_area_skm, density = pop_density) %>%
   mutate(rate = cases / population * 10^6)
 
-
-##Function 
+##Function--------------------------------------------
 cv_summary <- function(d, country_list = "World",
                        plot = TRUE, facet = "country",
                        status = c("confirmed", "deaths", "recovered")) {
@@ -288,8 +291,6 @@ daily%>%
 #Removing Puerto Rico, which was causing errors
 overall <- overall[-c(112),]
 daily <- daily[-c(112),]
-overall<-na.omit(overall)
-overall<-na.omit(overall)
 
 #rate vs density------------------------------------------------
 lm(rate ~ density, data=overall) %>%
@@ -420,7 +421,35 @@ r.squaredGLMM(s)
 ## Challenge 8
 
 ```{r}
+#filtering the data
+memodel<- cv_data%>%
+  filter(population>1000000 & variable == "daily_confirmed" & rate>0)
 
+#full model: 
+m1 <- lmer(data = memodel, log(rate) ~ log(density) + log(gdp_capita) + soc_dist + mov_rest +
+  (1 | country) + (1 | date), REML=FALSE)
 
+#models with different subsets: 
+m2 <- lmer(data = memodel, log(rate) ~ log(density) + log(gdp_capita) + soc_dist +
+  (1 | country) + (1 | date), REML=FALSE)
+
+m3 <- lmer(data = memodel, log(rate) ~ log(density) + log(gdp_capita) + mov_rest +
+  (1 | country) + (1 | date), REML=FALSE)
+
+m4 <- lmer(data = memodel, log(rate) ~ log(density) + soc_dist + mov_rest +
+  (1 | country) + (1 | date), REML=FALSE)
+
+m5 <- lmer(data = memodel, log(rate) ~ log(gdp_capita) + soc_dist + mov_rest +
+  (1 | country) + (1 | date), REML=FALSE)
+
+nullmodel <- lmer(data = memodel, log(rate) ~ (1 | country) + (1 | date), REML=FALSE)
+
+AICtable<-aictab(list(m1, m2, m3, m4, m5, nullmodel), c("m1", "m2", "m3", "m4", "m5", "nullmodel"))
+AICtable
+
+#The best model appears to be model 3, which excludes soc_dist
+
+#psueo_R^2 value of m2 model: 
+r.squaredGLMM(m3)
 
 ```
