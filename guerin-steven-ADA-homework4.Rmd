@@ -451,5 +451,4 @@ AICtable
 
 #psueo_R^2 value of m2 model: 
 r.squaredGLMM(m3)
-
 ```
