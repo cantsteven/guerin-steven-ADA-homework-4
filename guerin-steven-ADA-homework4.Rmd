@@ -9,9 +9,9 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## Pre-Challenge 
+## Setup
 
-```{r}
+```{r, include=FALSE}
 library(tidyverse)
 library(patchwork) # for plotting
 library(scales) # for log y axis scale
@@ -253,7 +253,7 @@ d<-d[[1]] %>%
 d
 
 #Finding number of unique countries, counting these
-d_unique<-unique(d) %>%
+d_unique<-unique(d$country) %>%
   length()
 d_unique
   
@@ -283,9 +283,12 @@ daily%>%
 ## Challenge 5
 
 ```{r}
+#Removing Puerto Rico, which was causing errors
+overall <- overall[-c(112),]
+
 #rate vs density------------------------------------------------
-lm(rate ~ density,data=overall) %>%
-summary()
+lm(rate ~ density, data=overall) %>%
+  summary()
 
 g<-ggplot(data=overall,aes(x=density, y=rate))+ 
   geom_point() + 
