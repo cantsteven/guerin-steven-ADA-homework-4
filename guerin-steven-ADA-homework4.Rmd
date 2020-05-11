@@ -288,6 +288,8 @@ daily%>%
 #Removing Puerto Rico, which was causing errors
 overall <- overall[-c(112),]
 daily <- daily[-c(112),]
+overall<-na.omit(overall)
+overall<-na.omit(overall)
 
 #rate vs density------------------------------------------------
 lm(rate ~ density, data=overall) %>%
@@ -402,13 +404,23 @@ r.squaredGLMM(s)
 ## Challenge 7
 
 ```{r}
+#Add max_sd and max_mr to best daily model 
+m <- lm(data = daily, rate ~ log(density) + log(gdp_capita) + max_sd + max_mr)
+s <- stepAIC(m, scope = . ~ ., direction = "both")
 
+# What are the pseudo-R^2 values?
+#full model
+r.squaredGLMM(m)
+#best model
+r.squaredGLMM(s)
 
-
+#Does either additional variables improve the model? Yes, max_mr improves the model. 
 ```
 
 ## Challenge 8
 
 ```{r}
+
+
 
 ```
